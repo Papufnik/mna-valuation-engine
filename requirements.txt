@@ -1,2 +1,2 @@
 openpyxl
-
+pytest  # dev/test only -- see tests/
