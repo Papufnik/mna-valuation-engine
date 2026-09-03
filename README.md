@@ -36,6 +36,14 @@ python demo.py                 # runs the valuation engine, then the deal room g
 
 No real business data is required or included.
 
+## Tests
+
+```bash
+pytest tests/
+```
+
+8 tests. The two that matter most: `test_recast_sde_and_valuation_math_matches_verified_net_income` pins the exact numbers down (net income $148,220.60 + $21,755.00 in add-backs = recast SDE $169,975.60, base valuation exactly 3.00x that), and `test_get_verified_net_income_fails_loudly_*` confirms the engine refuses to guess -- raising instead of silently defaulting -- when the tax package is missing or its net-income cell doesn't hold a real number, which is exactly the failure mode a hardcoded fallback would have hidden.
+
 ## Stack
 
 Python, `openpyxl` for reading the live tax workbook, JSON as the interchange format between the two scripts, plain HTML/CSS for the generated teaser.
