@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+dashboard_app/
+exit_package/
+sample_data/
