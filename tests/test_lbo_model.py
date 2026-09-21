@@ -42,9 +42,28 @@ SOFFICE_AVAILABLE = shutil.which("soffice") is not None
 
 
 @pytest.fixture(scope="module")
-def built_wb_path():
-    build_lbo_model.build()
-    return build_lbo_model.OUT_FILE
+def built_wb_path(tmp_path_factory):
+    """Builds into a throwaway temp path, never the real lbo_model/LBO_Model.xlsx.
+
+    build_lbo_model.OUT_FILE is a module-level constant pointing at the
+    committed, already-recalculated workbook. An earlier version of this
+    fixture called build_lbo_model.build() directly, which overwrites that
+    file in place with a fresh, formulas-only copy -- so simply running
+    `pytest tests/` left the checked-in LBO_Model.xlsx permanently broken
+    (every formula cell reading back as None) until someone manually
+    rebuilt and recalculated it again. Monkeypatching OUT_FILE for the
+    duration of this fixture keeps the test suite from touching the real
+    file at all.
+    """
+    tmp_dir = tmp_path_factory.mktemp("lbo_build")
+    tmp_file = tmp_dir / "LBO_Model.xlsx"
+    original_out_file = build_lbo_model.OUT_FILE
+    build_lbo_model.OUT_FILE = str(tmp_file)
+    try:
+        build_lbo_model.build()
+    finally:
+        build_lbo_model.OUT_FILE = original_out_file
+    return str(tmp_file)
 
 
 @pytest.fixture(scope="module")

@@ -34,8 +34,25 @@ SOFFICE_AVAILABLE = shutil.which("soffice") is not None
 
 
 @pytest.fixture(scope="module")
-def built_wb_path():
-    return build_qoe_workbook.build()
+def built_wb_path(tmp_path_factory):
+    """Builds into a throwaway temp path, never the real
+    qoe_workbook/QoE_Workbook.xlsx -- see the matching comment in
+    test_lbo_model.py's built_wb_path fixture. Calling
+    build_qoe_workbook.build() directly overwrites the committed,
+    already-recalculated workbook in place with a fresh formulas-only
+    copy, so simply running `pytest tests/` left the checked-in file
+    permanently broken until someone manually rebuilt and recalculated it
+    again.
+    """
+    tmp_dir = tmp_path_factory.mktemp("qoe_build")
+    tmp_file = tmp_dir / "QoE_Workbook.xlsx"
+    original_out_file = build_qoe_workbook.OUT_FILE
+    build_qoe_workbook.OUT_FILE = str(tmp_file)
+    try:
+        build_qoe_workbook.build()
+    finally:
+        build_qoe_workbook.OUT_FILE = original_out_file
+    return str(tmp_file)
 
 
 @pytest.fixture(scope="module")
